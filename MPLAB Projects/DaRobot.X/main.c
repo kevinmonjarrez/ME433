@@ -3,8 +3,6 @@
 #include<stdio.h>
 #include "NU32.h"
 
-//Defines
-#define ROW_SIZE 40
 // DEVCFG0
 #pragma config DEBUG = OFF // disable debugging
 #pragma config JTAGEN = OFF // disable jtag
@@ -62,10 +60,16 @@ int main() {
 
     TRISBbits.TRISB4 = 1; 
     TRISAbits.TRISA4 = 0;
-    char row[ROW_SIZE]; 
     while (1) {
-        NU32_ReadUART1(row, ROW_SIZE);
+        // use _CP0_SET_COUNT(0) and _CP0_GET_COUNT() to test the PIC timing
+        // remember the core timer runs at half the sysclk
+        if (PORTBbits.RB4 == 0){
+            
+            char m[50];
+            sprintf(m, "Danger Will Robinson\r\n");
+            NU32_WriteUART1(m);
             
             
     }
+}
 }

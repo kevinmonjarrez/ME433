@@ -8,7 +8,7 @@ from adafruit_ov7670 import (
 
 import sys
 import time
-#import serial
+import serial
 import digitalio
 import busio
 from ulab import numpy as np
@@ -105,27 +105,45 @@ while True:
         else: 
             ind = ind + 2
 
-    # send the color data as index red green blue
-	string_write = ""
-	num = 0
-    for c in range(red.size):
-        if (c > 279 and c < 320):
-            string_write = string_write + str(c)+" "+str(int(red[c]))+" "+str(int(green[c]))+" "+str(int(blue[c]))
-            num = num+1
-            if num < 20:
-                string_write = string_write+"\n"
-            if num == 20:
-                print(string_write)
-                string_write = ""
-                num = 0
-    if len(string_write) != 0:
-        print(string_write)
-'''
-for c in range(red.size):
-        if c > 279 and c < 320:
-            print(str(c)+" "+str(int(red[c]))+" "+str(int(green[c]))+" "+str(int(blue[c])))
-        if c > 559 and c < 600:
-            print(str(c)+" "+str(int(red[c]))+" "+str(int(green[c]))+" "+str(int(blue[c])))
-        if c > 839 and c < 880: 
-            print(str(c)+" "+str(int(red[c]))+" "+str(int(green[c]))+" "+str(int(blue[c])))
-            '''
+    # Data Manipulation: Where is the most red
+    #constants
+    kp = .5 #constant 
+    ki = .1 #integration constant 
+
+    eint = 0
+
+    mid = 299 #middle index
+    max = 0
+
+    #getting red list
+    
+    red_values = []
+    for c in range(279,320):
+        red_values.append(red[c])
+
+    #finding most red
+
+    max = 0
+    for i in range(0,len(red_values)):
+        if red_values[i] > max: 
+            max = red_values[i]
+            index = i
+
+    index = index + 280 #correcting for using the seventh row
+
+    position = index - mid # is it more right (positive) or more left (negative)
+
+    print(str(position)) #testing
+
+    err = position
+    eint = eint + position
+    u = kp*err + ki*eint
+
+    print(str(u))
+
+
+    #Sending to PIC: 
+
+    ser.write((str(u)+'\n').encode());
+
+
