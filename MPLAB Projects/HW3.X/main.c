@@ -4,7 +4,7 @@
 #include "NU32.h"
 
 //Defines
-#define ROW_SIZE 40
+#define ROW_SIZE 200
 // DEVCFG0
 #pragma config DEBUG = OFF // disable debugging
 #pragma config JTAGEN = OFF // disable jtag
@@ -57,15 +57,30 @@ int main() {
     
     U1RXRbits.U1RXR = 0b0000; // Set A2 to U1RX
     RPB3Rbits.RPB3R = 0b0001; // Set B3 to U1TX
+    //Setup
+    TRISDbits.TRISD6 = 0;
+    T2CONbits.TCKPS = 2;     // Timer2 prescaler N=4 (1:4)
+    PR2 = 999;              // period = (PR2+1) * N * 12.5 ns = 100 us, 10 kHz
+    TMR2 = 0;                // initial TMR2 count is 0
+    OC1CONbits.OCM = 0b110;  // PWM mode without fault pin; other OC1CON bits are defaults
+    OC1RS = 500;             // duty cycle = OC1RS/(PR2+1) = 25%
+    OC1R = 500;              // initialize before turning OC1 on; afterward it is read-only
+    T2CONbits.ON = 1;        // turn on Timer2
+    OC1CONbits.ON = 1;       // turn on OC1
 
     __builtin_enable_interrupts();
 
     TRISBbits.TRISB4 = 1; 
     TRISAbits.TRISA4 = 0;
-    char row[ROW_SIZE]; 
+    float row[ROW_SIZE]; 
+    
     while (1) {
         NU32_ReadUART1(row, ROW_SIZE);
-            
+        int u = 0; 
+        
+        sscanf(row, "%f", &u);
+        
+        
             
     }
 }
